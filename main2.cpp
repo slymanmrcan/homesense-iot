@@ -2,7 +2,6 @@
 #include "temperature_sensor.h"
 #include "proximity_sensor.h"
 #include "light_sensor.h"
-#include "bmp280_sensor.h"
 #include "api_client.h"
 #include "wifi_manager.h"
 #include "reading_models.h"
@@ -10,19 +9,16 @@
 unsigned long lastTemperatureReadTime = 0;
 unsigned long lastProximityReadTime = 0;
 unsigned long lastLightReadTime = 0;
-unsigned long lastBmp280ReadTime = 0;
 unsigned long lastPeriodicSendTime = 0;
 
 const unsigned long TEMPERATURE_READ_INTERVAL = 5000;
 const unsigned long PROXIMITY_READ_INTERVAL = 100;
 const unsigned long LIGHT_READ_INTERVAL = 5000;
-const unsigned long BMP280_READ_INTERVAL = 5000;
-const unsigned long PERIODIC_SEND_INTERVAL = 600000; // 10 dakika
+const unsigned long PERIODIC_SEND_INTERVAL = 600000;
 
 TemperatureHumidityData latestTemperatureData = {0, 0, false};
 ProximityData latestProximityData = {false, 1, 0, true};
 LightData latestLightData = {0, false};
-Bmp280Data latestBmp280Data = {0, 0, false};
 
 bool lastAlarmState = false;
 
@@ -39,37 +35,22 @@ static SensorSnapshot buildSnapshot(bool triggeredByThreshold)
     if (latestTemperatureData.valid)
     {
         snapshot.readings[snapshot.count++] = {
-            "temperature_dht11",
+            "temperature",
             latestTemperatureData.temperature,
             "C",
             true};
 
         snapshot.readings[snapshot.count++] = {
-            "humidity_dht11",
+            "humidity",
             latestTemperatureData.humidity,
             "%",
-            true};
-    }
-
-    if (latestBmp280Data.valid)
-    {
-        snapshot.readings[snapshot.count++] = {
-            "temperature_bmp280",
-            latestBmp280Data.temperature,
-            "C",
-            true};
-
-        snapshot.readings[snapshot.count++] = {
-            "pressure_bmp280",
-            latestBmp280Data.pressureHpa,
-            "hPa",
             true};
     }
 
     if (latestLightData.valid)
     {
         snapshot.readings[snapshot.count++] = {
-            "light_bh1750",
+            "light",
             latestLightData.lux,
             "lux",
             true};
@@ -78,7 +59,7 @@ static SensorSnapshot buildSnapshot(bool triggeredByThreshold)
     if (latestProximityData.valid)
     {
         snapshot.readings[snapshot.count++] = {
-            "proximity_lm393",
+            "proximity",
             latestProximityData.isNear ? 1.0f : 0.0f,
             "state",
             true};
@@ -87,7 +68,7 @@ static SensorSnapshot buildSnapshot(bool triggeredByThreshold)
     if (triggeredByThreshold)
     {
         snapshot.trigger.triggered = true;
-        snapshot.trigger.triggerSensorType = "proximity_lm393";
+        snapshot.trigger.triggerSensorType = "proximity";
         snapshot.trigger.triggerValue = latestProximityData.isNear ? 1.0f : 0.0f;
         snapshot.trigger.triggerRule = "isNear == true";
     }
@@ -106,7 +87,6 @@ void setup()
     initTemperatureSensor();
     initProximitySensor();
     initLightSensor();
-    initBmp280Sensor();
     connectWifi();
 }
 
@@ -121,7 +101,7 @@ void loop()
 
         if (latestTemperatureData.valid)
         {
-            Serial.print("DHT11 Temperature: ");
+            Serial.print("Temperature: ");
             Serial.print(latestTemperatureData.temperature);
             Serial.print(" C | Humidity: ");
             Serial.print(latestTemperatureData.humidity);
@@ -129,26 +109,7 @@ void loop()
         }
         else
         {
-            Serial.println("DHT11 read failed.");
-        }
-    }
-
-    if (now - lastBmp280ReadTime >= BMP280_READ_INTERVAL)
-    {
-        lastBmp280ReadTime = now;
-        latestBmp280Data = readBmp280Sensor();
-
-        if (latestBmp280Data.valid)
-        {
-            Serial.print("BMP280 Temperature: ");
-            Serial.print(latestBmp280Data.temperature);
-            Serial.print(" C | Pressure: ");
-            Serial.print(latestBmp280Data.pressureHpa);
-            Serial.println(" hPa");
-        }
-        else
-        {
-            Serial.println("BMP280 read failed.");
+            Serial.println("Temperature/Humidity read failed.");
         }
     }
 
@@ -159,13 +120,13 @@ void loop()
 
         if (latestLightData.valid)
         {
-            Serial.print("BH1750 Light: ");
+            Serial.print("Light: ");
             Serial.print(latestLightData.lux);
             Serial.println(" lux");
         }
         else
         {
-            Serial.println("BH1750 read failed.");
+            Serial.println("Light read failed.");
         }
     }
 

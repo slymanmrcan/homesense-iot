@@ -12,9 +12,9 @@ void initTemperatureSensor()
     dht.begin();
 }
 
-SensorData readTemperatureSensor()
+TemperatureHumidityData readTemperatureSensor()
 {
-    SensorData data;
+    TemperatureHumidityData data;
 
     data.humidity = dht.readHumidity();
     data.temperature = dht.readTemperature();

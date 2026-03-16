@@ -1,14 +1,9 @@
 #ifndef TEMPERATURE_SENSOR_H
 #define TEMPERATURE_SENSOR_H
 
-struct SensorData
-{
-    float temperature;
-    float humidity;
-    bool valid;
-};
+#include "reading_models.h"
 
 void initTemperatureSensor();
-SensorData readTemperatureSensor();
+TemperatureHumidityData readTemperatureSensor();
 
 #endif
