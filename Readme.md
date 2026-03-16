@@ -45,7 +45,7 @@ Birden fazla ESP32 cihazı sıcaklık, nem, basınç, ışık ve yakınlık gibi
 
 ### Devre Şeması
 
-![Devre Şeması](image.svg)
+![Devre Şeması](image.png)
 
 ---
 
@@ -60,7 +60,7 @@ include/
 ├── reading_models.h
 ├── temperature_sensor.h
 ├── wifi_manager.h
-├── secrets.h              ← git'e ekleme!
+├── secrets.h             
 └── secrets.h.example
 
 src/
@@ -73,8 +73,6 @@ src/
     ├── proximity_sensor.cpp
     └── temperature_sensor.cpp
 
-docs/
-└── schematic.svg
 ```
 
 ---
